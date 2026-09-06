@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>الخريطة التفاعلية لمشاريع وزارة النقل</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap');
+
+  :root{
+    --ink:#122b3d;
+    --slate:#3d5566;
+    --line:#d8dfe2;
+    --paper:#f6f4ef;
+    --rail:#c0392b;      /* سكك حديد */
+    --road:#1f6f5c;      /* طرق */
+    --port:#1a5b8c;      /* موانئ ومطارات */
+    --future:#b8860b;    /* مشاريع مستقبلية */
+    --panel:#ffffff;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;font-family:'IBM Plex Sans Arabic',sans-serif;color:var(--ink);background:var(--paper);}
+
+  #app{display:grid;grid-template-columns:340px 1fr;height:100vh;}
+
+  /* ===== الشريط الجانبي ===== */
+  #sidebar{
+    background:var(--panel);
+    border-left:1px solid var(--line);
+    display:flex;flex-direction:column;
+    overflow:hidden;
+    z-index:10;
+  }
+  #sidebar header{
+    padding:22px 22px 16px;
+    border-bottom:1px solid var(--line);
+  }
+  #sidebar header .eyebrow{
+    font-size:12px; color:var(--slate); margin:0 0 4px;
+  }
+  #sidebar header h1{
+    font-family:'Noto Kufi Arabic',sans-serif;
+    font-size:20px; font-weight:700; margin:0 0 6px; line-height:1.4;
+    color:var(--ink);
+  }
+  #sidebar header p{
+    font-size:13px; color:var(--slate); margin:0; line-height:1.6;
+  }
+
+  #stats{
+    display:grid; grid-template-columns:1fr 1fr; gap:1px;
+    background:var(--line); border-bottom:1px solid var(--line);
+  }
+  #stats .stat{ background:var(--panel); padding:14px 22px; }
+  #stats .stat .n{ font-family:'Noto Kufi Arabic',sans-serif; font-size:26px; font-weight:700; }
+  #stats .stat .l{ font-size:12px; color:var(--slate); margin-top:2px; }
+
+  #filters{ padding:16px 22px; border-bottom:1px solid var(--line); }
+  #filters .group-title{ font-size:12px; color:var(--slate); margin-bottom:10px; }
+  .filter-row{
+    display:flex; align-items:center; gap:10px;
+    padding:7px 0; cursor:pointer; font-size:14px; user-select:none;
+  }
+  .filter-row input{ accent-color:var(--ink); width:16px; height:16px; cursor:pointer; }
+  .swatch{ width:11px; height:11px; border-radius:2px; flex-shrink:0; }
+  .filter-row .count{ margin-right:auto; color:var(--slate); font-size:12px; }
+
+  #search{ padding:16px 22px; border-bottom:1px solid var(--line); }
+  #search input{
+    width:100%; padding:10px 14px; border:1px solid var(--line); border-radius:6px;
+    font-family:inherit; font-size:14px; background:var(--paper);
+  }
+  #search input:focus{ outline:2px solid var(--ink); outline-offset:1px; }
+
+  #list{ flex:1; overflow-y:auto; padding:8px 0; }
+  .item{
+    padding:12px 22px; border-bottom:1px solid #eef1f2; cursor:pointer;
+    display:flex; gap:10px; align-items:flex-start;
+  }
+  .item:hover{ background:#f9f8f5; }
+  .item .dot{ width:9px;height:9px;border-radius:50%;margin-top:5px;flex-shrink:0; }
+  .item .name{ font-size:14px; font-weight:600; }
+  .item .meta{ font-size:12px; color:var(--slate); margin-top:2px; }
+
+  /* ===== الخريطة ===== */
+  #map{ height:100vh; }
+
+  .leaflet-popup-content-wrapper{
+    border-radius:8px; font-family:'IBM Plex Sans Arabic',sans-serif;
+  }
+  .popup-title{
+    font-family:'Noto Kufi Arabic',sans-serif; font-weight:700; font-size:15px;
+    margin-bottom:6px; color:var(--ink);
+  }
+  .popup-row{ font-size:13px; margin:4px 0; color:var(--slate); display:flex; gap:6px; }
+  .popup-row b{ color:var(--ink); font-weight:600; min-width:70px; }
+  .popup-status{
+    display:inline-block; font-size:11px; padding:2px 8px; border-radius:20px;
+    margin-top:6px; font-weight:600;
+  }
+  .status-done{ background:#e3f1ec; color:var(--road); }
+  .status-future{ background:#fbf1de; color:var(--future); }
+
+  /* أزرار زووم leaflet لتناسب RTL */
+  .leaflet-control-zoom{ direction:ltr; }
+
+  ::-webkit-scrollbar{ width:8px; }
+  ::-webkit-scrollbar-thumb{ background:var(--line); border-radius:4px; }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <aside id="sidebar">
+    <header>
+      <p class="eyebrow">وزارة النقل — الجمهورية العربية السورية</p>
+      <h1>الخريطة التفاعلية لمشاريع النقل والمواصلات</h1>
+      <p>نموذج أولي (Prototype) — بيانات تجريبية توضيحية</p>
+    </header>
+
+    <div id="stats"></div>
+
+    <div id="filters">
+      <div class="group-title">تصنيف البنى</div>
+      <div id="filter-list"></div>
+    </div>
+
+    <div id="search">
+      <input type="text" id="search-input" placeholder="ابحث عن مشروع أو موقع…">
+    </div>
+
+    <div id="list"></div>
+  </aside>
+
+  <main id="map"></main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+/* ============================================================
+   بيانات تجريبية — تمثيل لأنواع مشاريع وزارة النقل السورية
+   في التنفيذ الفعلي: تُستبدل هذه المصفوفة بطلب إلى GeoJSON
+   أو API يزوّد ببيانات الوزارة الحقيقية
+   ============================================================ */
+const CATEGORIES = {
+  road:   { label: "الطرق والجسور",      color: "var(--road)"   },
+  rail:   { label: "السكك الحديدية",      color: "var(--rail)"   },
+  port:   { label: "الموانئ والمطارات",   color: "var(--port)"   },
+  future: { label: "مشاريع مستقبلية",     color: "var(--future)" },
+};
+
+const PROJECTS = [
+  { id:1, name:"طريق حلب – اللاذقية السريع", cat:"road", status:"done",
+    lat:35.75, lng:36.65, gov:"اللاذقية", body:"منفّذ من قبل مديرية طرق اللاذقية", budget:"—", start:"2023" },
+  { id:2, name:"محطة قطار حلب المركزية", cat:"rail", status:"done",
+    lat:36.20, lng:37.15, gov:"حلب", body:"المؤسسة العامة للخطوط الحديدية", budget:"—", start:"2022" },
+  { id:3, name:"ميناء اللاذقية — رصيف 4", cat:"port", status:"done",
+    lat:35.52, lng:35.78, gov:"اللاذقية", body:"مؤسسة المواني", budget:"—", start:"2021" },
+  { id:4, name:"مطار دمشق الدولي — توسعة", cat:"port", status:"future",
+    lat:33.41, lng:36.51, gov:"دمشق", body:"المؤسسة العامة للطيران المدني", budget:"قيد الدراسة", start:"2027" },
+  { id:5, name:"خط سكة حديد دمشق – حمص", cat:"rail", status:"future",
+    lat:34.20, lng:36.55, gov:"حمص", body:"المؤسسة العامة للخطوط الحديدية", budget:"قيد الدراسة", start:"2027" },
+  { id:6, name:"جسر نهر العاصي", cat:"road", status:"done",
+    lat:34.73, lng:36.71, gov:"حمص", body:"مديرية طرق حمص", budget:"—", start:"2020" },
+  { id:7, name:"ميناء طرطوس — محطة حاويات", cat:"port", status:"done",
+    lat:34.90, lng:35.87, gov:"طرطوس", body:"مؤسسة المواني", budget:"—", start:"2019" },
+  { id:8, name:"طريق دمشق – درعا", cat:"road", status:"done",
+    lat:32.90, lng:36.25, gov:"درعا", body:"مديرية طرق درعا", budget:"—", start:"2022" },
+  { id:9, name:"محطة قطار دمشق الحجاز", cat:"rail", status:"future",
+    lat:33.51, lng:36.29, gov:"دمشق", body:"مشروع إحياء الخط الحجازي", budget:"قيد الدراسة", start:"2028" },
+  { id:10, name:"طريق الرقة – دير الزور", cat:"road", status:"future",
+    lat:35.60, lng:39.60, gov:"الرقة", body:"مديرية طرق الرقة", budget:"قيد الدراسة", start:"2027" },
+];
+
+/* ============================================================ */
+
+let activeFilters = new Set(Object.keys(CATEGORIES));
+let markers = {};
+
+const map = L.map('map', { zoomControl:true }).setView([34.9, 37.0], 7);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap contributors',
+  maxZoom: 18
+}).addTo(map);
+
+function colorFor(cat){
+  return getComputedStyle(document.documentElement).getPropertyValue('--' +
+    (cat === 'road' ? 'road' : cat === 'rail' ? 'rail' : cat === 'port' ? 'port' : 'future')
+  ).trim();
+}
+
+function makeMarker(p){
+  const color = colorFor(p.status === 'future' ? 'future' : p.cat);
+  const marker = L.circleMarker([p.lat, p.lng], {
+    radius: 8,
+    fillColor: color,
+    color: '#fff',
+    weight: 2,
+    fillOpacity: 0.95,
+  });
+
+  const statusHtml = p.status === 'done'
+    ? `<span class="popup-status status-done">قائم / منفَّذ</span>`
+    : `<span class="popup-status status-future">مشروع مستقبلي</span>`;
+
+  marker.bindPopup(`
+    <div class="popup-title">${p.name}</div>
+    <div class="popup-row"><b>المحافظة</b> ${p.gov}</div>
+    <div class="popup-row"><b>الجهة</b> ${p.body}</div>
+    <div class="popup-row"><b>تاريخ البدء</b> ${p.start}</div>
+    <div class="popup-row"><b>الموازنة</b> ${p.budget}</div>
+    ${statusHtml}
+  `);
+
+  marker.addTo(map);
+  return marker;
+}
+
+PROJECTS.forEach(p => { markers[p.id] = makeMarker(p); });
+
+/* ===== الإحصائيات ===== */
+function renderStats(){
+  const total = PROJECTS.length;
+  const future = PROJECTS.filter(p => p.status === 'future').length;
+  document.getElementById('stats').innerHTML = `
+    <div class="stat"><div class="n">${total}</div><div class="l">إجمالي المشاريع</div></div>
+    <div class="stat"><div class="n">${future}</div><div class="l">مشاريع مستقبلية</div></div>
+  `;
+}
+renderStats();
+
+/* ===== الفلاتر ===== */
+function renderFilters(){
+  const el = document.getElementById('filter-list');
+  el.innerHTML = Object.entries(CATEGORIES).map(([key, c]) => {
+    const count = PROJECTS.filter(p => p.cat === key).length;
+    return `
+      <label class="filter-row">
+        <input type="checkbox" data-cat="${key}" checked>
+        <span class="swatch" style="background:${c.color}"></span>
+        <span>${c.label}</span>
+        <span class="count">${count}</span>
+      </label>
+    `;
+  }).join('');
+
+  el.querySelectorAll('input[type=checkbox]').forEach(cb => {
+    cb.addEventListener('change', () => {
+      const cat = cb.dataset.cat;
+      if (cb.checked) activeFilters.add(cat); else activeFilters.delete(cat);
+      applyFilters();
+    });
+  });
+}
+renderFilters();
+
+function applyFilters(searchTerm = ''){
+  PROJECTS.forEach(p => {
+    const matchesCat = activeFilters.has(p.cat);
+    const matchesSearch = !searchTerm || p.name.includes(searchTerm) || p.gov.includes(searchTerm);
+    const visible = matchesCat && matchesSearch;
+    const marker = markers[p.id];
+    if (visible && !map.hasLayer(marker)) marker.addTo(map);
+    if (!visible && map.hasLayer(marker)) map.removeLayer(marker);
+  });
+  renderList(searchTerm);
+}
+
+/* ===== قائمة المشاريع ===== */
+function renderList(searchTerm = ''){
+  const el = document.getElementById('list');
+  const filtered = PROJECTS.filter(p =>
+    activeFilters.has(p.cat) &&
+    (!searchTerm || p.name.includes(searchTerm) || p.gov.includes(searchTerm))
+  );
+
+  el.innerHTML = filtered.map(p => {
+    const color = colorFor(p.status === 'future' ? 'future' : p.cat);
+    return `
+      <div class="item" data-id="${p.id}">
+        <span class="dot" style="background:${color}"></span>
+        <div>
+          <div class="name">${p.name}</div>
+          <div class="meta">${p.gov} · ${CATEGORIES[p.cat].label}</div>
+        </div>
+      </div>
+    `;
+  }).join('') || `<div style="padding:20px 22px;color:var(--slate);font-size:13px;">لا توجد نتائج مطابقة</div>`;
+
+  el.querySelectorAll('.item').forEach(item => {
+    item.addEventListener('click', () => {
+      const p = PROJECTS.find(pr => pr.id === Number(item.dataset.id));
+      map.setView([p.lat, p.lng], 11, { animate:true });
+      markers[p.id].openPopup();
+    });
+  });
+}
+renderList();
+
+/* ===== البحث ===== */
+document.getElementById('search-input').addEventListener('input', (e) => {
+  applyFilters(e.target.value.trim());
+});
+</script>
+</body>
+</html>
