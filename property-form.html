@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>إضافة / تعديل عقار | عقارات وزارة النقل</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<div class="proto-banner">
+  <i class="bi bi-info-circle"></i>
+  نموذج أولي (Prototype) لأغراض العرض فقط — لا يتم حفظ أي بيانات فعلياً
+</div>
+
+<nav class="navbar app-navbar navbar-expand-lg">
+  <div class="container-fluid">
+    <a class="brand navbar-brand" href="index.html">
+      <i class="bi bi-signpost-split-fill fs-4" style="color:#C9962C"></i>
+      <span>نظام إدارة العقارات الاستثمارية
+        <small>وزارة النقل — الأبنية العقارية المعروضة للاستثمار</small>
+      </span>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav1">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="nav1">
+      <ul class="navbar-nav ms-auto gap-1">
+        <li class="nav-item"><a class="nav-link" href="index.html"><i class="bi bi-map"></i> الخريطة الاستثمارية</a></li>
+        <li class="nav-item"><a class="nav-link" href="properties.html"><i class="bi bi-table"></i> إدارة العقارات</a></li>
+        <li class="nav-item"><a class="nav-link active" href="property-form.html"><i class="bi bi-plus-circle"></i> إضافة عقار جديد</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container p-4" style="max-width: 980px;">
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0" style="color:var(--navy)"><i class="bi bi-building-add"></i> إضافة عقار جديد</h4>
+    <a href="properties.html" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-right"></i> العودة إلى اللائحة</a>
+  </div>
+
+  <form onsubmit="return false;">
+
+    <!-- 1. بيانات تعريفية وموقع -->
+    <div class="panel mb-3">
+      <div class="panel-header"><i class="bi bi-geo-alt"></i> البيانات التعريفية والموقع الجغرافي</div>
+      <div class="panel-body">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">رمز العقار</label>
+            <input type="text" class="form-control" placeholder="MOT-LTK-014">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">الجهة المالكة</label>
+            <select class="form-select"><option>المؤسسة العامة للطرق والجسور</option><option>الشركة العامة للنقل البري</option><option>المؤسسة العامة للخطوط الحديدية</option></select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">المحافظة</label>
+            <select class="form-select" id="formGov"></select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">نوع العقار</label>
+            <select class="form-select" id="formType"></select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">المنطقة العقارية</label>
+            <input type="text" class="form-control" placeholder="مثال: الشيخ ضاهر">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">رقم العقار</label>
+            <input type="text" class="form-control">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">خط الطول (Longitude)</label>
+            <input type="text" class="form-control" placeholder="35.7915">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">خط العرض (Latitude)</label>
+            <input type="text" class="form-control" placeholder="35.5317">
+          </div>
+          <div class="col-md-4 d-flex align-items-end">
+            <button type="button" class="btn btn-outline-brand w-100"><i class="bi bi-crosshair"></i> تحديد الموقع على الخريطة</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. المساحة والوضع القانوني -->
+    <div class="panel mb-3">
+      <div class="panel-header"><i class="bi bi-rulers"></i> المساحة والوضع القانوني</div>
+      <div class="panel-body">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">المساحة الإجمالية (م²)</label>
+            <input type="number" class="form-control">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">الوضع القانوني والملكية</label>
+            <select class="form-select" id="formLegal"></select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label d-block">وجود حدود واضحة للعقار</label>
+            <div class="form-check form-switch pt-2">
+              <input class="form-check-input" type="checkbox" role="switch">
+              <label class="form-check-label small text-muted">الحدود مرسّمة وواضحة ميدانياً</label>
+            </div>
+          </div>
+          <div class="col-12">
+            <label class="form-label">وصف العقار بشكل تفصيلي</label>
+            <textarea class="form-control" rows="2"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. الاستملاك وبدلاته -->
+    <div class="panel mb-3">
+      <div class="panel-header"><i class="bi bi-cash-coin"></i> الاستملاك وبدلاته</div>
+      <div class="panel-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">مرسوم الاستملاك (رقم وتاريخ)</label>
+            <input type="text" class="form-control" placeholder="مرسوم رقم ... تاريخ ...">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">قيمة بدلات الاستملاك (ل.س)</label>
+            <input type="number" class="form-control">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">تسديد بدلات الاستملاك</label>
+            <select class="form-select" id="compensationStatus">
+              <option value="unpaid">غير مسدد</option>
+              <option value="fully_paid">مسدد بالكامل</option>
+              <option value="partial">نسبة</option>
+            </select>
+          </div>
+          <div class="col-md-6" id="compensationPercentBox" style="display:none">
+            <label class="form-label">نسبة تسديد بدلات الاستملاك (%)</label>
+            <input type="number" min="0" max="100" class="form-control" id="compensationPercent">
+            <div class="form-hint">إلزامي فقط عند اختيار "نسبة"</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. الإشارات -->
+    <div class="panel mb-3">
+      <div class="panel-header"><i class="bi bi-flag"></i> الإشارات على العقار</div>
+      <div class="panel-body">
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" role="switch" id="hasMarkings">
+          <label class="form-check-label" for="hasMarkings">يوجد إشارات على العقار</label>
+        </div>
+        <div class="conditional-field row g-3 d-none" id="markingsFields">
+          <div class="col-md-4">
+            <label class="form-label">تاريخ الإشارة</label>
+            <input type="date" class="form-control">
+          </div>
+          <div class="col-md-8">
+            <label class="form-label">سبب الإشارة</label>
+            <input type="text" class="form-control">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. المخالفات -->
+    <div class="panel mb-3">
+      <div class="panel-header"><i class="bi bi-exclamation-triangle"></i> المخالفات</div>
+      <div class="panel-body">
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" role="switch" id="hasViolations">
+          <label class="form-check-label" for="hasViolations">يوجد مخالفات في العقار</label>
+        </div>
+        <div class="conditional-field row g-3 d-none" id="violationsFields">
+          <div class="col-md-6">
+            <label class="form-label">نوع المخالفات</label>
+            <input type="text" class="form-control">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label d-block">إمكانية إزالة المخالفات</label>
+            <select class="form-select">
+              <option>نعم</option>
+              <option>لا</option>
+              <option>قيد الدراسة</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. الوضع التشغيلي -->
+    <div class="panel mb-3">
+      <div class="panel-header"><i class="bi bi-gear"></i> الوضع التشغيلي</div>
+      <div class="panel-body">
+        <div class="form-check form-switch mb-2">
+          <input class="form-check-input" type="checkbox" role="switch" id="isOperational">
+          <label class="form-check-label" for="isOperational">العقار مشغّل حالياً</label>
+        </div>
+        <div class="conditional-field d-none mb-3" id="currentOpFields">
+          <label class="form-label">توصيف التشغيل الحالي</label>
+          <textarea class="form-control" rows="2"></textarea>
+        </div>
+
+        <div class="form-check form-switch mb-2">
+          <input class="form-check-input" type="checkbox" role="switch" id="wasOperated">
+          <label class="form-check-label" for="wasOperated">كان العقار مشغّلاً سابقاً</label>
+        </div>
+        <div class="conditional-field d-none" id="previousOpFields">
+          <label class="form-label">توصيف التشغيل السابق</label>
+          <textarea class="form-control" rows="2"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. مقترحات الاستثمار -->
+    <div class="panel mb-3">
+      <div class="panel-header"><i class="bi bi-lightbulb"></i> مقترحات الاستثمار</div>
+      <div class="panel-body">
+        <div id="proposalsList"></div>
+        <button type="button" class="btn btn-outline-brand btn-sm mt-2" id="addProposal"><i class="bi bi-plus-lg"></i> إضافة مقترح استثماري</button>
+      </div>
+    </div>
+
+    <!-- 8. الصور -->
+    <div class="panel mb-3">
+      <div class="panel-header"><i class="bi bi-images"></i> صور العقار</div>
+      <div class="panel-body">
+        <div class="upload-drop mb-3">
+          <i class="bi bi-cloud-arrow-up fs-2"></i>
+          <p class="mb-1 fw-bold">اسحب الصور هنا أو اضغط للاختيار</p>
+          <p class="small mb-0">JPG / PNG — يمكن اختيار عدة صور دفعة واحدة</p>
+        </div>
+        <div class="d-flex flex-wrap gap-3" id="imagePreviewBox">
+          <div class="upload-preview-wrap">
+            <img src="https://picsum.photos/seed/formimg1/200/200" class="upload-preview">
+            <span class="badge badge-soft-gold badge-primary-photo">رئيسية</span>
+            <button type="button" class="remove-btn">×</button>
+          </div>
+          <div class="upload-preview-wrap">
+            <img src="https://picsum.photos/seed/formimg2/200/200" class="upload-preview">
+            <button type="button" class="remove-btn">×</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 9. ملاحظات -->
+    <div class="panel mb-4">
+      <div class="panel-header"><i class="bi bi-journal-text"></i> ملاحظات عامة</div>
+      <div class="panel-body">
+        <textarea class="form-control" rows="2"></textarea>
+      </div>
+    </div>
+
+    <div class="d-flex gap-2 justify-content-end mb-5">
+      <a href="properties.html" class="btn btn-outline-secondary px-4">إلغاء</a>
+      <button type="button" class="btn btn-brand px-4"><i class="bi bi-check-lg"></i> حفظ بيانات العقار</button>
+    </div>
+
+  </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="assets/data.js"></script>
+<script>
+function fillSelect(id, values) {
+  const sel = document.getElementById(id);
+  values.forEach(v => {
+    const o = document.createElement('option');
+    o.value = v; o.textContent = v;
+    sel.appendChild(o);
+  });
+}
+fillSelect('formGov', GOVERNORATES);
+fillSelect('formType', PROPERTY_TYPES);
+fillSelect('formLegal', LEGAL_STATUSES);
+
+// ===== تبديل الحقول الشرطية =====
+function bindToggle(checkboxId, fieldsId) {
+  const cb = document.getElementById(checkboxId);
+  const fields = document.getElementById(fieldsId);
+  cb.addEventListener('change', () => fields.classList.toggle('d-none', !cb.checked));
+}
+bindToggle('hasMarkings', 'markingsFields');
+bindToggle('hasViolations', 'violationsFields');
+bindToggle('isOperational', 'currentOpFields');
+bindToggle('wasOperated', 'previousOpFields');
+
+// نسبة تسديد بدلات الاستملاك تظهر فقط عند اختيار "نسبة"
+document.getElementById('compensationStatus').addEventListener('change', function () {
+  document.getElementById('compensationPercentBox').style.display = this.value === 'partial' ? 'block' : 'none';
+});
+
+// ===== مقترحات الاستثمار الديناميكية =====
+let proposalCount = 0;
+function addProposalRow(text = '') {
+  proposalCount++;
+  const row = document.createElement('div');
+  row.className = 'd-flex gap-2 align-items-start mb-2 proposal-row';
+  row.innerHTML = `
+    <span class="proposal-rank mt-2">${proposalCount}</span>
+    <textarea class="form-control form-control-sm" rows="1" placeholder="نص مقترح الاستثمار">${text}</textarea>
+    <button type="button" class="btn btn-sm btn-outline-danger remove-proposal"><i class="bi bi-trash"></i></button>
+  `;
+  row.querySelector('.remove-proposal').addEventListener('click', () => {
+    row.remove();
+    renumberProposals();
+  });
+  document.getElementById('proposalsList').appendChild(row);
+}
+function renumberProposals() {
+  document.querySelectorAll('#proposalsList .proposal-row').forEach((row, i) => {
+    row.querySelector('.proposal-rank').textContent = i + 1;
+  });
+  proposalCount = document.querySelectorAll('#proposalsList .proposal-row').length;
+}
+document.getElementById('addProposal').addEventListener('click', () => addProposalRow());
+addProposalRow('تحويل الطابق الأرضي إلى معارض تجارية مع إبقاء الطوابق العلوية إدارية');
+
+// ===== إزالة معاينة الصور =====
+document.getElementById('imagePreviewBox').addEventListener('click', e => {
+  if (e.target.classList.contains('remove-btn')) {
+    e.target.closest('.upload-preview-wrap').remove();
+  }
+});
+</script>
+</body>
+</html>
